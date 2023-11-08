@@ -112,11 +112,18 @@ ssize_t u_sendfile_ocall(int *error, int out_fd, int in_fd, off_t *offset, size_
 
 ssize_t u_copy_file_range_ocall(int *error, int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags)
 {
+#ifdef __NR_copy_file_range
     ssize_t ret = syscall(__NR_copy_file_range, fd_in, off_in, fd_out, off_out, len, flags);
     if (error) {
         *error = ret == -1 ? errno : 0;
     }
     return ret;
+#else
+    if (error) {
+        *error = ENOSYS;
+    }
+    return -1;
+#endif
 }
 
 ssize_t u_splice_ocall(int *error, int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags)
